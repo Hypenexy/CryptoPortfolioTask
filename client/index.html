@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crypto Portfolio</title>
+    <style>
+        body {
+            background-color: #013220;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #00ff7f;
+            text-align: center;
+        }
+
+        form {
+            background-color: #014d26;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        input, textarea, button {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #00ff7f;
+            border-radius: 5px;
+            background-color: #013d2a;
+            color: #ffffff;
+        }
+
+        button {
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #00ff7f;
+            color: #013220;
+        }
+
+        #portfolioValue {
+            font-size: 1.2em;
+            font-weight: bold;
+            text-align: center;
+            margin-top: 20px;
+        }
+    </style>
+    <script>
+        async function submitPortfolio(event) {
+            event.preventDefault();
+
+            const userId = document.getElementById('userId').value;
+            const holdings = document.getElementById('holdings').value;
+
+            try {
+                // Submit portfolio data
+                const response = await fetch('/portfolio', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId, holdings: JSON.parse(holdings) }),
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to submit portfolio');
+                }
+
+                alert('Portfolio submitted successfully!');
+            } catch (error) {
+                console.error(error);
+                alert('Error submitting portfolio');
+            }
+        }
+
+        async function getPortfolioValue(event) {
+            event.preventDefault();
+
+            const userId = document.getElementById('userId').value;
+
+            try {
+                // Fetch portfolio value
+                const response = await fetch(`/portfolio/value?userId=${userId}`);
+                const data = await response.json();
+
+                if (response.ok) {
+                    document.getElementById('portfolioValue').innerText = `Total Portfolio Value: $${data.totalValue}`;
+                } else {
+                    throw new Error(data.error || 'Failed to fetch portfolio value');
+                }
+            } catch (error) {
+                console.error(error);
+                alert('Error fetching portfolio value');
+            }
+        }
+    </script>
+</head>
+<body>
+    <h1>Crypto Portfolio</h1>
+
+    <form id="portfolioForm" onsubmit="submitPortfolio(event)">
+        <label for="userId">User ID:</label>
+        <input type="text" id="userId" name="userId" required>
+        <br><br>
+
+        <label for="holdings">Holdings (JSON format):</label>
+        <textarea id="holdings" name="holdings" rows="5" cols="30" required>
+[{"symbol": "BTC", "amount": 1}, {"symbol": "ETH", "amount": 5}]
+        </textarea>
+        <br><br>
+
+        <button type="submit">Submit Portfolio</button>
+    </form>
+
+    <br>
+
+    <button onclick="getPortfolioValue(event)">Get Portfolio Value</button>
+    <p id="portfolioValue"></p>
+</body>
+</html>
